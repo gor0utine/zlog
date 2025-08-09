@@ -4,12 +4,17 @@ import (
 	"bytes"
 	"testing"
 
+	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-func TestNew(t *testing.T) {
+func newTestLogger() (*bytes.Buffer, *zap.Logger) {
 	var buf bytes.Buffer
-	logger := New(zapcore.DebugLevel, &buf)
+	return &buf, New(zapcore.DebugLevel, &buf)
+}
+
+func TestNew(t *testing.T) {
+	_, logger := newTestLogger()
 	if logger == nil {
 		t.Fatal("Expected non-nil logger")
 	}
@@ -23,13 +28,12 @@ func TestNewStdOut(t *testing.T) {
 }
 
 func TestSetLogger(t *testing.T) {
-	var buf bytes.Buffer
-	logger := New(zapcore.DebugLevel, &buf)
+	_, logger := newTestLogger()
 	SetLogger(logger)
-	if global != logger {
+	if Logger() != logger {
 		t.Fatal("Expected global logger to be set")
 	}
-	if globalSugared == nil {
+	if Sugared() == nil {
 		t.Fatal("Expected global sugared logger to be set")
 	}
 }
@@ -41,19 +45,20 @@ func TestSetLevel(t *testing.T) {
 	}
 }
 
-func TestLogger(t *testing.T) {
-	if Logger() == nil {
-		t.Fatal("Expected non-nil global logger")
-	}
-}
-
-func TestSugared(t *testing.T) {
-	if Sugared() == nil {
-		t.Fatal("Expected non-nil global sugared logger")
-	}
+func TestLoggerAndSugared(t *testing.T) {
+	t.Run("Logger", func(t *testing.T) {
+		if Logger() == nil {
+			t.Fatal("Expected non-nil global logger")
+		}
+	})
+	t.Run("Sugared", func(t *testing.T) {
+		if Sugared() == nil {
+			t.Fatal("Expected non-nil global sugared logger")
+		}
+	})
 }
 
 func TestClose(t *testing.T) {
-	// Ensure no panic occurs
+	// Should not panic
 	Close()
 }

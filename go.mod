@@ -1,4 +1,4 @@
-module github.com/pr1sonmike/zlog
+module github.com/gor0utine/zlog
 
 go 1.24.0
 
